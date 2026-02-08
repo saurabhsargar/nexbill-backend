@@ -4,14 +4,20 @@ import { CreateUserDto } from './dto/create-users.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import * as authUserType from 'src/auth/types/auth-user.type';
 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
     constructor(private usersService: UsersService) { }
 
     @Post()
-    create(@Body() dto: CreateUserDto) {
-        return this.usersService.createUser(dto);
+    create(
+        @CurrentUser() user: authUserType.AuthUser,
+        @Body() dto: CreateUserDto,
+    ) {
+        return this.usersService.createUser(user, dto);
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -21,4 +27,3 @@ export class UsersController {
         return this.usersService.findAll();
     }
 }
-   

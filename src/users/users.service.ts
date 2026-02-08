@@ -1,19 +1,38 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-users.dto';
+import { AuthUser } from 'src/auth/types/auth-user.type';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
     constructor(private prisma: PrismaService) { }
 
-    async createUser(dto: CreateUserDto) {
-        const existingUser = await this.prisma.user.findUnique({
-            where: { email: dto.email },
+    async createUser(currentUser: AuthUser, dto: CreateUserDto) {
+        // 🔐 ROLE PERMISSION MATRIX
+        if (currentUser.role === Role.CASHIER) {
+            throw new ForbiddenException('You cannot create users');
+        }
+
+        if (
+            currentUser.role === Role.MANAGER &&
+            dto.role !== Role.CASHIER
+        ) {
+            throw new ForbiddenException('Managers can only create cashiers');
+        }
+
+        // ADMIN can create anyone → no restriction
+
+        const existingUser = await this.prisma.user.findFirst({
+            where: {
+                email: dto.email,
+                organizationId: currentUser.organizationId,
+            },
         });
 
         if (existingUser) {
-            throw new BadRequestException('Email already exists');
+            throw new BadRequestException('User already exists in this organization');
         }
 
         const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -23,6 +42,8 @@ export class UsersService {
                 name: dto.name,
                 email: dto.email,
                 password: hashedPassword,
+                role: dto.role,
+                organizationId: currentUser.organizationId,
             },
         });
     }
