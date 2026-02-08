@@ -48,16 +48,20 @@ export class UsersService {
         });
     }
 
-    async findAll() {
+    async findAll(currentUser: AuthUser) {
         return this.prisma.user.findMany({
+            where: {
+                organizationId: currentUser.organizationId,
+            },
             select: {
                 id: true,
                 name: true,
                 email: true,
                 role: true,
-                createdAt: true,
+            },
+            orderBy: {
+                createdAt: 'desc',
             },
         });
     }
-
 }
