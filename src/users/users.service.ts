@@ -58,9 +58,84 @@ export class UsersService {
                 name: true,
                 email: true,
                 role: true,
+                isActive: true,
             },
             orderBy: {
                 createdAt: 'desc',
+            },
+        });
+    }
+
+    async updateUserRole(
+        currentUser: AuthUser,
+        userId: string,
+        role: Role,
+    ) {
+        // 🔒 Only ADMIN can edit roles
+        if (currentUser.role !== Role.ADMIN) {
+            throw new ForbiddenException('Only ADMIN can edit user roles');
+        }
+
+        const targetUser = await this.prisma.user.findFirst({
+            where: {
+                id: userId,
+                organizationId: currentUser.organizationId,
+            },
+        });
+
+        if (!targetUser) {
+            throw new BadRequestException('User not found in your organization');
+        }
+
+        // 🚫 Prevent self role modification
+        if (targetUser.id === currentUser.id) {
+            throw new ForbiddenException('You cannot change your own role');
+        }
+
+        return this.prisma.user.update({
+            where: { id: targetUser.id },
+            data: { role },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+            },
+        });
+    }
+
+    async deactivateUser(
+        currentUser: AuthUser,
+        userId: string,
+    ) {
+        if (currentUser.role !== Role.ADMIN) {
+            throw new ForbiddenException('Only ADMIN can deactivate users');
+        }
+
+        const targetUser = await this.prisma.user.findFirst({
+            where: {
+                id: userId,
+                organizationId: currentUser.organizationId,
+            },
+        });
+
+        if (!targetUser) {
+            throw new BadRequestException('User not found in your organization');
+        }
+
+        if (targetUser.id === currentUser.id) {
+            throw new ForbiddenException('You cannot deactivate yourself');
+        }
+
+        return this.prisma.user.update({
+            where: { id: targetUser.id },
+            data: { isActive: false },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                isActive: true,
             },
         });
     }

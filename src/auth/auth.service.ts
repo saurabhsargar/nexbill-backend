@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -23,6 +23,10 @@ export class AuthService {
         organization: true,
       },
     });
+
+    if (!user?.isActive) {
+      throw new ForbiddenException('Your account has been deactivated');
+    }
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
