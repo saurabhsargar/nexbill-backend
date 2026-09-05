@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-users.dto';
@@ -7,136 +11,126 @@ import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-    constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-    async createUser(currentUser: AuthUser, dto: CreateUserDto) {
-        // 🔐 ROLE PERMISSION MATRIX
-        if (currentUser.role === Role.CASHIER) {
-            throw new ForbiddenException('You cannot create users');
-        }
-
-        if (
-            currentUser.role === Role.MANAGER &&
-            dto.role !== Role.CASHIER
-        ) {
-            throw new ForbiddenException('Managers can only create cashiers');
-        }
-
-        // ADMIN can create anyone → no restriction
-
-        const existingUser = await this.prisma.user.findFirst({
-            where: {
-                email: dto.email,
-                organizationId: currentUser.organizationId,
-            },
-        });
-
-        if (existingUser) {
-            throw new BadRequestException('User already exists in this organization');
-        }
-
-        const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-        return this.prisma.user.create({
-            data: {
-                name: dto.name,
-                email: dto.email,
-                password: hashedPassword,
-                role: dto.role,
-                organizationId: currentUser.organizationId,
-            },
-        });
+  async createUser(currentUser: AuthUser, dto: CreateUserDto) {
+    // 🔐 ROLE PERMISSION MATRIX
+    if (currentUser.role === Role.CASHIER) {
+      throw new ForbiddenException('You cannot create users');
     }
 
-    async findAll(currentUser: AuthUser) {
-        return this.prisma.user.findMany({
-            where: {
-                organizationId: currentUser.organizationId,
-            },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-                isActive: true,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
+    if (currentUser.role === Role.MANAGER && dto.role !== Role.CASHIER) {
+      throw new ForbiddenException('Managers can only create cashiers');
     }
 
-    async updateUserRole(
-        currentUser: AuthUser,
-        userId: string,
-        role: Role,
-    ) {
-        // 🔒 Only ADMIN can edit roles
-        if (currentUser.role !== Role.ADMIN) {
-            throw new ForbiddenException('Only ADMIN can edit user roles');
-        }
+    // ADMIN can create anyone → no restriction
 
-        const targetUser = await this.prisma.user.findFirst({
-            where: {
-                id: userId,
-                organizationId: currentUser.organizationId,
-            },
-        });
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        email: dto.email,
+        organizationId: currentUser.organizationId,
+      },
+    });
 
-        if (!targetUser) {
-            throw new BadRequestException('User not found in your organization');
-        }
-
-        // 🚫 Prevent self role modification
-        if (targetUser.id === currentUser.id) {
-            throw new ForbiddenException('You cannot change your own role');
-        }
-
-        return this.prisma.user.update({
-            where: { id: targetUser.id },
-            data: { role },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-            },
-        });
+    if (existingUser) {
+      throw new BadRequestException('User already exists in this organization');
     }
 
-    async deactivateUser(
-        currentUser: AuthUser,
-        userId: string,
-    ) {
-        if (currentUser.role !== Role.ADMIN) {
-            throw new ForbiddenException('Only ADMIN can deactivate users');
-        }
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-        const targetUser = await this.prisma.user.findFirst({
-            where: {
-                id: userId,
-                organizationId: currentUser.organizationId,
-            },
-        });
+    return this.prisma.user.create({
+      data: {
+        name: dto.name,
+        email: dto.email,
+        password: hashedPassword,
+        role: dto.role,
+        organizationId: currentUser.organizationId,
+      },
+    });
+  }
 
-        if (!targetUser) {
-            throw new BadRequestException('User not found in your organization');
-        }
+  async findAll(currentUser: AuthUser) {
+    return this.prisma.user.findMany({
+      where: {
+        organizationId: currentUser.organizationId,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 
-        if (targetUser.id === currentUser.id) {
-            throw new ForbiddenException('You cannot deactivate yourself');
-        }
-
-        return this.prisma.user.update({
-            where: { id: targetUser.id },
-            data: { isActive: false },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-                isActive: true,
-            },
-        });
+  async updateUserRole(currentUser: AuthUser, userId: string, role: Role) {
+    // 🔒 Only ADMIN can edit roles
+    if (currentUser.role !== Role.ADMIN) {
+      throw new ForbiddenException('Only ADMIN can edit user roles');
     }
+
+    const targetUser = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+        organizationId: currentUser.organizationId,
+      },
+    });
+
+    if (!targetUser) {
+      throw new BadRequestException('User not found in your organization');
+    }
+
+    // 🚫 Prevent self role modification
+    if (targetUser.id === currentUser.id) {
+      throw new ForbiddenException('You cannot change your own role');
+    }
+
+    return this.prisma.user.update({
+      where: { id: targetUser.id },
+      data: { role },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
+  }
+
+  async deactivateUser(currentUser: AuthUser, userId: string) {
+    if (currentUser.role !== Role.ADMIN) {
+      throw new ForbiddenException('Only ADMIN can deactivate users');
+    }
+
+    const targetUser = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+        organizationId: currentUser.organizationId,
+      },
+    });
+
+    if (!targetUser) {
+      throw new BadRequestException('User not found in your organization');
+    }
+
+    if (targetUser.id === currentUser.id) {
+      throw new ForbiddenException('You cannot deactivate yourself');
+    }
+
+    return this.prisma.user.update({
+      where: { id: targetUser.id },
+      data: { isActive: false },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+      },
+    });
+  }
 }

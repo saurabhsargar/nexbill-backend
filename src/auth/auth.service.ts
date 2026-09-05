@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -9,7 +14,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   async login(email: string, password: string, organizationSlug: string) {
     const user = await this.prisma.user.findFirst({
@@ -48,7 +53,6 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
     };
   }
-
 
   async getMe(userId: string) {
     return this.prisma.user.findUnique({
@@ -119,5 +123,4 @@ export class AuthService {
       organizationId: result.organization.id,
     };
   }
-
 }

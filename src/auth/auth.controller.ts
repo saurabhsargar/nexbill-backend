@@ -1,4 +1,11 @@
-import { Controller, Post, Body, UseGuards, Get, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -7,7 +14,7 @@ import { RegisterOrganizationDto } from './dto/register-organization.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @Post('login')
   login(@Body() dto: LoginDto) {
@@ -40,5 +47,4 @@ export class AuthController {
   registerOrg(@Body() dto: RegisterOrganizationDto) {
     return this.authService.registerOrganization(dto);
   }
-
 }
