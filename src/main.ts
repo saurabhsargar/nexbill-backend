@@ -19,6 +19,10 @@ async function bootstrap() {
   mkdirSync(join(uploadsDir, 'logos'), { recursive: true });
   app.useStaticAssets(uploadsDir, { prefix: '/uploads/' });
 
+  // Private storage (backup dumps, etc.) -- never registered with
+  // useStaticAssets; only reachable through authenticated controller routes.
+  mkdirSync(join(process.cwd(), 'storage', 'backups'), { recursive: true });
+
   await app.listen(4000);
 }
 bootstrap();

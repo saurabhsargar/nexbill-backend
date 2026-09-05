@@ -12,6 +12,9 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { ReportsModule } from './reports/reports.module';
 import { BusinessModule } from './business/business.module';
 import { SettingsModule } from './settings/settings.module';
+import { SystemModule } from './system/system.module';
+import { BackupsModule } from './backups/backups.module';
+import { ExportsModule } from './exports/exports.module';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { SettingsModule } from './settings/settings.module';
     ReportsModule,
     BusinessModule,
     SettingsModule,
+    SystemModule,
+    BackupsModule,
+    ExportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

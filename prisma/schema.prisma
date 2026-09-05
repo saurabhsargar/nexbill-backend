@@ -51,6 +51,9 @@ model Organization {
   businessProfile  BusinessProfile?
   taxConfig        TaxConfig?
   regionalSettings RegionalSettings?
+
+  backups        Backup[]
+  backupSchedule BackupSchedule?
 }
 
 enum Role {
@@ -228,4 +231,41 @@ model NotificationPreference {
 
   user   User   @relation(fields: [userId], references: [id])
   userId String @unique
+}
+
+enum BackupType {
+  FULL
+  INCREMENTAL
+}
+
+enum BackupStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model Backup {
+  id           String       @id @default(uuid())
+  type         BackupType
+  status       BackupStatus @default(PENDING)
+  sizeBytes    BigInt?
+  filePath     String?
+  errorMessage String?
+  createdAt    DateTime     @default(now())
+  completedAt  DateTime?
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+}
+
+model BackupSchedule {
+  id             String   @id @default(uuid())
+  frequency      String
+  time           String
+  retentionCount Int      @default(7)
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String   @unique
 }
