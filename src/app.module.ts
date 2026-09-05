@@ -10,6 +10,8 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ReportsModule } from './reports/reports.module';
+import { BusinessModule } from './business/business.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { ReportsModule } from './reports/reports.module';
     ExpensesModule,
     DashboardModule,
     ReportsModule,
+    BusinessModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

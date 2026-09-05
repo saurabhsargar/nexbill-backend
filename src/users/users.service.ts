@@ -8,6 +8,9 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-users.dto';
 import { AuthUser } from 'src/auth/types/auth-user.type';
 import { Role } from '@prisma/client';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
+import { UpdateSecuritySettingsDto } from './dto/update-security-settings.dto';
 
 @Injectable()
 export class UsersService {
@@ -132,5 +135,59 @@ export class UsersService {
         isActive: true,
       },
     });
+  }
+
+  getNotificationPreferences(currentUser: AuthUser) {
+    return this.prisma.notificationPreference.upsert({
+      where: { userId: currentUser.id },
+      update: {},
+      create: { userId: currentUser.id },
+    });
+  }
+
+  updateNotificationPreferences(
+    currentUser: AuthUser,
+    dto: UpdateNotificationPreferencesDto,
+  ) {
+    return this.prisma.notificationPreference.upsert({
+      where: { userId: currentUser.id },
+      update: dto,
+      create: { ...dto, userId: currentUser.id },
+    });
+  }
+
+  // Persists the preference only -- not yet wired into actual JWT/session
+  // expiry, which would need per-session token TTL logic.
+  updateSecuritySettings(
+    currentUser: AuthUser,
+    dto: UpdateSecuritySettingsDto,
+  ) {
+    return this.prisma.user.update({
+      where: { id: currentUser.id },
+      data: { sessionTimeoutMinutes: dto.sessionTimeoutMinutes },
+      select: { id: true, sessionTimeoutMinutes: true },
+    });
+  }
+
+  async changePassword(currentUser: AuthUser, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: currentUser.id },
+    });
+
+    const passwordValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.password,
+    );
+    if (!passwordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: currentUser.id },
+      data: { password: hashedPassword },
+    });
+
+    return { message: 'Password updated successfully' };
   }
 }

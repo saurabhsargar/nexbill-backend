@@ -5,6 +5,7 @@ import {
   UseGuards,
   Get,
   Patch,
+  Put,
   Param,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -15,6 +16,9 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import * as authUserType from 'src/auth/types/auth-user.type';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
+import { UpdateSecuritySettingsDto } from './dto/update-security-settings.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -51,5 +55,34 @@ export class UsersController {
     @Param('id') id: string,
   ) {
     return this.usersService.deactivateUser(user, id);
+  }
+
+  @Get('me/notification-preferences')
+  getNotificationPreferences(@CurrentUser() user: authUserType.AuthUser) {
+    return this.usersService.getNotificationPreferences(user);
+  }
+
+  @Put('me/notification-preferences')
+  updateNotificationPreferences(
+    @CurrentUser() user: authUserType.AuthUser,
+    @Body() dto: UpdateNotificationPreferencesDto,
+  ) {
+    return this.usersService.updateNotificationPreferences(user, dto);
+  }
+
+  @Put('me/security-settings')
+  updateSecuritySettings(
+    @CurrentUser() user: authUserType.AuthUser,
+    @Body() dto: UpdateSecuritySettingsDto,
+  ) {
+    return this.usersService.updateSecuritySettings(user, dto);
+  }
+
+  @Post('me/change-password')
+  changePassword(
+    @CurrentUser() user: authUserType.AuthUser,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.usersService.changePassword(user, dto);
   }
 }

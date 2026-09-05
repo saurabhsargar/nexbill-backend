@@ -147,9 +147,11 @@ export class ProductsService {
   }
 
   async create(user: AuthUser, dto: CreateProductDto) {
+    const gstRate =
+      dto.gstRate ?? (await this.resolveDefaultGstRate(user.organizationId));
     try {
       const product = await this.prisma.product.create({
-        data: { ...dto, organizationId: user.organizationId },
+        data: { ...dto, gstRate, organizationId: user.organizationId },
         select: FULL_SELECT,
       });
       return withStatus(product);
@@ -162,6 +164,14 @@ export class ProductsService {
       }
       throw err;
     }
+  }
+
+  private async resolveDefaultGstRate(organizationId: string): Promise<number> {
+    const taxConfig = await this.prisma.taxConfig.findUnique({
+      where: { organizationId },
+      select: { defaultGstRate: true },
+    });
+    return taxConfig ? Number(taxConfig.defaultGstRate) : 18;
   }
 
   async update(user: AuthUser, id: string, dto: UpdateProductDto) {
