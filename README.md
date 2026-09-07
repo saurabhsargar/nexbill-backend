@@ -1,98 +1,127 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <img src="https://nestjs.com/img/logo-small.svg" width="90" alt="NestJS" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+<h1 align="center">NexBill</h1>
+<p align="center">A multi-tenant invoicing &amp; billing backend built with NestJS, Prisma, and PostgreSQL.</p>
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+<p align="center">
+  <img src="https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white" alt="NestJS" />
+  <img src="https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white" alt="Prisma" />
+  <img src="https://img.shields.io/badge/PostgreSQL-database-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/license-UNLICENSED-lightgrey" alt="License" />
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Overview
 
-## Project setup
+NexBill is a REST API for organizations to manage products, customers, invoices, expenses, and business reporting from a single backend. It supports role-based access control, automated backups, and data export in multiple formats (PDF, Excel, CSV).
 
-```bash
-$ npm install
+## Features
+
+- **Auth** — JWT-based authentication with role-scoped access (`ADMIN`, `MANAGER`, `CASHIER`)
+- **Products** — catalog management with stock adjustments
+- **Customers** — customer directory and relationship data
+- **Invoices** — invoice creation, line items, tax calculation, and configuration
+- **Expenses** — expense tracking per organization
+- **Dashboard & Reports** — aggregated business metrics and reporting endpoints
+- **Business & Settings** — business profile, tax config, regional settings, notification preferences
+- **Exports** — generate PDF (`pdfkit`), Excel (`exceljs`), and CSV (`csv-stringify`) documents
+- **Backups** — scheduled and on-demand database backups
+- **System** — health/system info via `systeminformation`
+
+## Tech Stack
+
+| Layer          | Technology                          |
+|----------------|--------------------------------------|
+| Framework      | [NestJS 11](https://nestjs.com)      |
+| Language       | TypeScript                           |
+| ORM / Database | [Prisma](https://prisma.io) + PostgreSQL |
+| Auth           | JWT (`@nestjs/jwt`, `passport-jwt`)  |
+| Validation     | `class-validator`, `class-transformer` |
+| Documents      | `pdfkit`, `exceljs`, `csv-stringify` |
+| Testing        | Jest, Supertest                      |
+
+## Project Structure
+
+```
+src/
+├── auth/          # JWT auth, guards, roles, strategies
+├── users/         # User management
+├── business/      # Business profile
+├── products/      # Product catalog & stock
+├── customers/      # Customer records
+├── invoices/      # Invoicing & line items
+├── expenses/      # Expense tracking
+├── dashboard/     # Aggregated metrics
+├── reports/       # Reporting endpoints
+├── settings/      # Tax, regional & notification settings
+├── exports/       # PDF / Excel / CSV generation
+├── backups/       # Backup jobs & schedules
+├── system/        # System/health info
+├── database/      # Prisma module & client
+└── common/        # Shared utilities (pagination, date, tax-calc)
 ```
 
-## Compile and run the project
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL instance
+
+### Setup
 
 ```bash
-# development
-$ npm run start
+# install dependencies
+npm install
 
-# watch mode
-$ npm run start:dev
+# configure environment
+cp .env.example .env   # then fill in the values below
 
-# production mode
-$ npm run start:prod
+# run database migrations
+npx prisma migrate dev
+
+# start in watch mode
+npm run start:dev
 ```
 
-## Run tests
+### Environment Variables
+
+| Variable          | Description                          |
+|--------------------|---------------------------------------|
+| `DATABASE_URL`     | PostgreSQL connection string          |
+| `JWT_SECRET`        | Secret used to sign JWT tokens        |
+| `JWT_EXPIRES_IN`    | Token expiry (e.g. `1d`)              |
+| `PORT`              | API port                              |
+| `REDIS_HOST`        | Redis host                            |
+| `REDIS_PORT`        | Redis port                            |
+
+## Available Scripts
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev     # development with hot reload
+npm run start:prod     # production build
+npm run build           # compile TypeScript
+npm run lint             # lint & autofix
+npm run format           # format with Prettier
+npm run test              # unit tests
+npm run test:e2e         # end-to-end tests
+npm run test:cov         # coverage report
 ```
 
-## Deployment
+## Database
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Schema is managed with Prisma (`prisma/schema.prisma`). Core models include `User`, `Organization`, `Product`, `StockAdjustment`, `Customer`, `Invoice`, `InvoiceItem`, `Expense`, `BusinessProfile`, `TaxConfig`, `RegionalSettings`, and `Backup`.
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma studio        # browse data
+npx prisma migrate dev   # apply migrations
+npx prisma generate      # regenerate client
 ```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED — private/proprietary project.
